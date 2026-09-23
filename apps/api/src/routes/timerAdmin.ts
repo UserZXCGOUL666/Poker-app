@@ -5,7 +5,8 @@ import {
   applyTournamentTimerAction,
   getOrCreateTournamentTimer,
   replaceTournamentTimerLevels,
-  serializeTimer
+  serializeTimer,
+  updateTournamentTimerDisplay
 } from '../services/tournamentTimer.js';
 
 export const timerAdminRouter = Router();
@@ -31,6 +32,13 @@ const structureSchema = z.object({
   levels: z.array(levelSchema).min(1, 'Добавьте хотя бы один уровень').max(100, 'Допустимо не больше 100 уровней')
 });
 
+
+const displaySchema = z.object({
+  topTicker: z.string().trim().max(260).nullable().optional(),
+  bottomTicker: z.string().trim().max(260).nullable().optional(),
+  tickerSpeed: z.coerce.number().int().min(8).max(90).default(28)
+});
+
 const actionSchema = z.discriminatedUnion('action', [
   z.object({ action: z.enum(['START', 'PAUSE', 'RESUME', 'NEXT', 'PREVIOUS', 'RESET', 'FINISH']) }),
   z.object({ action: z.literal('GOTO'), levelIndex: z.coerce.number().int().min(0).max(99) }),
@@ -49,6 +57,19 @@ timerAdminRouter.put('/:id/timer/structure', async (req, res, next) => {
   try {
     const { levels } = structureSchema.parse(req.body);
     const timer = await replaceTournamentTimerLevels(req.params.id, levels, req.auth!.userId);
+    return res.json(serializeTimer(timer));
+  } catch (error) { return next(error); }
+});
+
+
+timerAdminRouter.put('/:id/timer/display', async (req, res, next) => {
+  try {
+    const settings = displaySchema.parse(req.body);
+    const timer = await updateTournamentTimerDisplay(req.params.id, {
+      topTicker: settings.topTicker ?? null,
+      bottomTicker: settings.bottomTicker ?? null,
+      tickerSpeed: settings.tickerSpeed
+    }, req.auth!.userId);
     return res.json(serializeTimer(timer));
   } catch (error) { return next(error); }
 });

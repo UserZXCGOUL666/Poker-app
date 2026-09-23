@@ -260,6 +260,9 @@ model TournamentTimer {
   currentLevelIndex    Int                   @default(0)
   remainingSeconds     Int                   @default(0)
   startedAt            DateTime?
+  topTicker            String?               @db.Text
+  bottomTicker         String?               @db.Text
+  tickerSpeed          Int                   @default(28)
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   tournament           Tournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
@@ -473,7 +476,7 @@ model TournamentSeat {
 model ClubSettings {
   id                       String   @id @default("main")
   ratingBannerImageData    String?  @db.Text
-  accentColor              String   @default("#3B8CFF")
+  accentColor              String   @default("#FF3D0A")
   trainingSheetUrl         String?  @db.Text
   trainingLeadPopupEnabled Boolean  @default(false)
   updatedAt                DateTime @updatedAt

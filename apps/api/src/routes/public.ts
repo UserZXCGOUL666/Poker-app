@@ -30,7 +30,7 @@ publicRouter.get('/branding/rating-banner', async (_req, res) => {
 
 publicRouter.get('/branding/theme', async (_req, res) => {
   const settings = await prisma.clubSettings.findUnique({ where: { id: 'main' }, select: { accentColor: true, updatedAt: true } });
-  return res.json({ accentColor: settings?.accentColor ?? '#3B8CFF', updatedAt: settings?.updatedAt ?? null });
+  return res.json({ accentColor: settings?.accentColor ?? '#FF3D0A', updatedAt: settings?.updatedAt ?? null });
 });
 
 publicRouter.get('/users/:id/avatar', async (req, res) => {
@@ -159,7 +159,7 @@ publicRouter.get('/home', async (req, res) => {
     gamesPlayed,
     wins,
     leaders,
-    branding: { hasRatingBanner: Boolean(branding?.ratingBannerImageData), accentColor: branding?.accentColor ?? '#3B8CFF', updatedAt: branding?.updatedAt ?? null },
+    branding: { hasRatingBanner: Boolean(branding?.ratingBannerImageData), accentColor: branding?.accentColor ?? '#FF3D0A', updatedAt: branding?.updatedAt ?? null },
     nextSeating
   });
 });

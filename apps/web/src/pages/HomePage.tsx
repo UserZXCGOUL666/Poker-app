@@ -94,7 +94,7 @@ export function HomePage() {
 
     <section
       className={`home-overview-card ${data.branding?.hasRatingBanner ? 'home-overview-custom' : ''}`}
-      style={data.branding?.hasRatingBanner ? { backgroundImage: `linear-gradient(100deg, rgba(30, 12, 25, .96), rgba(52, 20, 37, .78)), url(${apiAssetUrl(`/branding/rating-banner?v=${encodeURIComponent(data.branding.updatedAt ?? '')}`)})` } : undefined}
+      style={data.branding?.hasRatingBanner ? { backgroundImage: `linear-gradient(100deg, rgba(12, 13, 14, .96), rgba(31, 20, 14, .80)), url(${apiAssetUrl(`/branding/rating-banner?v=${encodeURIComponent(data.branding.updatedAt ?? '')}`)})` } : undefined}
     >
       <Link className="home-player-summary" to="/rating" aria-label="Открыть рейтинг игроков">
         <small>ИГРОК</small>

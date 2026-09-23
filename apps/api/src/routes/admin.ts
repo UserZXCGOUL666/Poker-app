@@ -216,7 +216,7 @@ adminRouter.post('/training-leads/sync', async (_req, res, next) => {
 
 adminRouter.get('/branding', async (_req, res) => {
   const settings = await prisma.clubSettings.findUnique({ where: { id: 'main' } });
-  return res.json({ ratingBannerImageData: settings?.ratingBannerImageData ?? null, accentColor: settings?.accentColor ?? '#3B8CFF', updatedAt: settings?.updatedAt ?? null });
+  return res.json({ ratingBannerImageData: settings?.ratingBannerImageData ?? null, accentColor: settings?.accentColor ?? '#FF3D0A', updatedAt: settings?.updatedAt ?? null });
 });
 
 const accentColorSchema = z.object({ accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Укажите цвет в формате #RRGGBB') });
@@ -235,7 +235,7 @@ adminRouter.put('/branding/accent-color', async (req, res, next) => {
       await writeAudit(tx, {
         actorId: req.auth!.userId, action: 'INTERFACE_COLOR_UPDATED', entityType: 'ClubSettings', entityId: updated.id,
         summary: `Цвет интерфейса изменён на ${accentColor}`,
-        before: { accentColor: existing?.accentColor ?? '#3B8CFF' }, after: { accentColor }
+        before: { accentColor: existing?.accentColor ?? '#FF3D0A' }, after: { accentColor }
       });
       return updated;
     });

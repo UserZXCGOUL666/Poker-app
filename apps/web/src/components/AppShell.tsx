@@ -22,8 +22,8 @@ export function AppShell() {
   return (
     <div className={`app-shell ${gamesMode ? 'app-shell-games' : ''}`}>
       <header className="brand-header">
-        <div className="brand-mark">PL</div>
-        <div className="brand-copy"><strong>POKER CLUB</strong><span>Спортивная лига</span></div>
+        <div className="brand-mark" aria-hidden="true">♠</div>
+        <div className="brand-copy"><strong>POKER CLUB</strong><span>SPORTS LEAGUE · LIVE SYSTEM</span></div>
         <div className="header-actions">
           {user?.role === 'ADMIN' && <NavLink className="admin-shortcut" to="/admin" aria-label="Админка"><ShieldCheck size={19} /></NavLink>}
           {user && <NavLink className="header-profile-link" to="/profile" aria-label="Открыть профиль"><Avatar firstName={user.firstName} lastName={user.lastName} photoUrl={user.photoUrl} /></NavLink>}

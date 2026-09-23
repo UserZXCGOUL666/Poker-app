@@ -81,6 +81,9 @@ export function serializeTimer(timer: TimerWithLevels, now = new Date()) {
     remainingSeconds: clock.remainingSeconds,
     serverNow: now.toISOString(),
     updatedAt: timer.updatedAt,
+    topTicker: timer.topTicker,
+    bottomTicker: timer.bottomTicker,
+    tickerSpeed: timer.tickerSpeed,
     levels: timer.levels
   };
 }
@@ -166,6 +169,43 @@ export async function replaceTournamentTimerLevels(tournamentId: string, levels:
       after: { levels: levels.length, totalSeconds: levels.reduce((sum, level) => sum + level.durationSeconds, 0) }
     });
     return tx.tournamentTimer.findUniqueOrThrow({ where: { id: timer.id }, include: includeTimer });
+  });
+}
+
+
+export type TournamentTimerDisplaySettings = {
+  topTicker: string | null;
+  bottomTicker: string | null;
+  tickerSpeed: number;
+};
+
+export async function updateTournamentTimerDisplay(
+  tournamentId: string,
+  settings: TournamentTimerDisplaySettings,
+  actorId: string
+) {
+  return prisma.$transaction(async (tx) => {
+    const timer = await tx.tournamentTimer.findUnique({ where: { tournamentId }, include: includeTimer });
+    if (!timer) throw new AppError('Сначала откройте таймер турнира', 404, 'TIMER_NOT_FOUND');
+    const updated = await tx.tournamentTimer.update({
+      where: { id: timer.id },
+      data: {
+        topTicker: settings.topTicker?.trim() || null,
+        bottomTicker: settings.bottomTicker?.trim() || null,
+        tickerSpeed: settings.tickerSpeed
+      },
+      include: includeTimer
+    });
+    await writeAudit(tx, {
+      actorId,
+      action: 'TOURNAMENT_TIMER_DISPLAY_UPDATED',
+      entityType: 'TournamentTimer',
+      entityId: timer.id,
+      summary: `Обновлено оформление табло «${timer.tournament.title}»`,
+      before: { topTicker: timer.topTicker, bottomTicker: timer.bottomTicker, tickerSpeed: timer.tickerSpeed },
+      after: settings as unknown as Prisma.InputJsonValue
+    });
+    return updated;
   });
 }
 

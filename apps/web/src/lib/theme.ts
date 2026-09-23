@@ -1,4 +1,4 @@
-export const DEFAULT_ACCENT_COLOR = '#3B8CFF';
+export const DEFAULT_ACCENT_COLOR = '#FF3D0A';
 export const ACCENT_STORAGE_KEY = 'poker-club-accent-color';
 
 export function normalizeAccentColor(value: string | null | undefined) {

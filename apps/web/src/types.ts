@@ -75,6 +75,9 @@ export type TournamentTimer = {
   remainingSeconds: number;
   serverNow: string;
   updatedAt: string;
+  topTicker: string | null;
+  bottomTicker: string | null;
+  tickerSpeed: number;
   levels: TournamentTimerLevel[];
 };
 
