@@ -1,0 +1,23 @@
+{
+  "name": "poker-club-mini-app",
+  "version": "1.19.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,cyan \"npm run dev -w @poker-club/api\" \"npm run dev -w @poker-club/web\"",
+    "build": "npm run build -w @poker-club/api && npm run build -w @poker-club/web",
+    "test": "npm run test -w @poker-club/api && npm run test -w @poker-club/web",
+    "typecheck": "npm run typecheck -w @poker-club/api && npm run typecheck -w @poker-club/web",
+    "db:generate": "npm run db:generate -w @poker-club/api",
+    "db:migrate": "npm run db:migrate -w @poker-club/api",
+    "db:seed": "npm run db:seed -w @poker-club/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
