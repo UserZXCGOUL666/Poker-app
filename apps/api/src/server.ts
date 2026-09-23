@@ -1,4 +1,4 @@
-import app from './app.js';
+const app = require('./app.js');
 import { env } from './config.js';
 import { initializeBot } from './bot.js';
 import { prisma } from './db.js';

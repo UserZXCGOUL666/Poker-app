@@ -19,4 +19,3 @@ if (shouldMigrate) {
   console.log('Skipping prisma migrate deploy outside production. Set RUN_MIGRATIONS=true for an isolated preview database.');
 }
 
-run('npx', ['tsc', '-p', 'tsconfig.json']);

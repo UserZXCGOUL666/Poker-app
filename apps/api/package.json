@@ -2,7 +2,7 @@
   "name": "@poker-club/api",
   "version": "1.19.0",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
