@@ -1,0 +1,687 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLAYER
+  ADMIN
+}
+
+enum TournamentStatus {
+  UPCOMING
+  ACTIVE
+  FINISHED
+  CANCELLED
+}
+
+enum PointTransactionType {
+  AWARD
+  DEDUCTION
+  CORRECTION
+}
+
+enum TournamentRegistrationStatus {
+  REGISTERED
+  WAITLISTED
+  CHECKED_IN
+  PLAYED
+  CANCELLED
+}
+
+enum TournamentPlayerActionType {
+  REBUY
+  REENTRY
+  ELIMINATION
+  BOUNTY
+  BONUS_XP
+}
+
+enum ReasonPresetKind {
+  AWARD
+  DEDUCTION
+  BOTH
+}
+
+enum ClubXpSource {
+  DAILY_HAND
+  REFERRAL_INVITER
+  REFERRAL_INVITEE
+  ACHIEVEMENT
+  ADMIN_ADJUSTMENT
+  REVERSAL
+}
+
+enum ReferralStatus {
+  PENDING
+  REWARDED
+  REJECTED
+}
+
+enum AchievementRule {
+  FIRST_VISIT
+  FIRST_WIN
+  VISITS
+  FINAL_TABLES
+  REFERRALS
+  STREAK
+  DAILY_HAND_CORRECT
+}
+
+enum TournamentTimerStatus {
+  READY
+  RUNNING
+  PAUSED
+  FINISHED
+}
+
+enum TournamentTimerLevelKind {
+  LEVEL
+  BREAK
+}
+
+model User {
+  id                    String                   @id @default(cuid())
+  telegramId            BigInt?                  @unique
+  email                 String?                  @unique
+  passwordHash          String?
+  username              String?
+  nickname              String?
+  firstName             String
+  lastName              String?
+  photoUrl              String?
+  profilePhotoData      String?                  @db.Text
+  profilePhotoPublicId  String?
+  role                  UserRole                 @default(PLAYER)
+  points                Int                      @default(0)
+  clubXp                Int                      @default(0)
+  referralCode          String?                  @unique
+  lastSeenAt            DateTime                 @default(now())
+  adminNote             String?
+  phoneNumber           String?                  @unique
+  phoneSharedAt         DateTime?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  results               TournamentResult[]
+  pointTransactions     PointTransaction[]       @relation("PointRecipient")
+  pointChangesMade      PointTransaction[]       @relation("PointAdmin")
+  browserInvites        BrowserAccessInvite[]    @relation("BrowserInviteRecipient")
+  browserInvitesCreated BrowserAccessInvite[]    @relation("BrowserInviteAdmin")
+  browserLoginCodes     BrowserLoginCode[]
+  browserSessions       BrowserSession[]
+  registrations         TournamentRegistration[]
+  tags                  UserTag[]
+  auditLogs             AuditLog[]               @relation("AuditActor")
+  pointBatchesCreated   PointBatch[]             @relation("PointBatchAdmin")
+  finalizedSeasons      Season[]                 @relation("SeasonFinalizedBy")
+  seasonStandings       SeasonStanding[]
+  seatAssignments       TournamentSeat[]
+  clubXpTransactions    ClubXpTransaction[]      @relation("ClubXpRecipient")
+  clubXpChangesMade     ClubXpTransaction[]      @relation("ClubXpAdmin")
+  achievements          UserAchievement[]
+  referralsSent         Referral[]               @relation("ReferralInviter")
+  referralReceived      Referral?                @relation("ReferralInvitee")
+  dailyHandAttempts     DailyHandAttempt[]
+  analyticsEvents       AnalyticsEvent[]
+  tournamentActions     TournamentPlayerAction[] @relation("TournamentActionPlayer")
+  tournamentActionTargets TournamentPlayerAction[] @relation("TournamentActionTarget")
+  tournamentActionsCreated TournamentPlayerAction[] @relation("TournamentActionAdmin")
+  trainingLeads             TrainingLead[]
+
+  @@index([points, createdAt])
+  @@index([clubXp, createdAt])
+  @@index([lastSeenAt])
+}
+
+model BrowserAccessInvite {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  userId      String
+  createdById String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation("BrowserInviteRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation("BrowserInviteAdmin", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([userId, expiresAt])
+  @@index([createdById, createdAt])
+}
+
+model BrowserSession {
+  id        String    @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([revokedAt, expiresAt])
+}
+
+model BrowserLoginCode {
+  id        String    @id @default(cuid())
+  codeHash  String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([usedAt, expiresAt])
+}
+
+model BroadcastDraft {
+  telegramId      BigInt   @id
+  audience        String
+  stage           String
+  text            String?  @db.Text
+  chatId          BigInt
+  promptMessageId BigInt
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([expiresAt])
+}
+
+model RateLimitBucket {
+  key       String   @id
+  count     Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([expiresAt])
+}
+
+model Season {
+  id                String             @id @default(cuid())
+  name              String
+  number            Int
+  startsAt          DateTime
+  endsAt            DateTime
+  isActive          Boolean            @default(false)
+  finalizedAt       DateTime?
+  finalizedById     String?
+  createdAt         DateTime           @default(now())
+  tournaments       Tournament[]
+  pointTransactions PointTransaction[]
+  standings         SeasonStanding[]
+  finalizedBy       User?              @relation("SeasonFinalizedBy", fields: [finalizedById], references: [id], onDelete: SetNull)
+
+  @@index([isActive, startsAt])
+}
+
+model Tournament {
+  id                   String                   @id @default(cuid())
+  seasonId             String
+  title                String
+  description          String?
+  startsAt             DateTime
+  location             String?
+  capacity             Int                      @default(48)
+  participantCount     Int                      @default(0)
+  status               TournamentStatus         @default(UPCOMING)
+  registrationClosed   Boolean                  @default(false)
+  registrationDeadline DateTime?
+  seatingPublishedAt   DateTime?
+  seatingVersion       Int                      @default(0)
+  templateId           String?
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+  season               Season                   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  results              TournamentResult[]
+  notifications        NotificationLog[]
+  registrations        TournamentRegistration[]
+  pointBatches         PointBatch[]
+  template             TournamentTemplate?      @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  tables               TournamentTable[]
+  seats                TournamentSeat[]
+  timer                 TournamentTimer?
+  playerActions         TournamentPlayerAction[]
+
+  @@unique([templateId, startsAt])
+  @@index([seasonId, startsAt])
+  @@index([status, startsAt])
+  @@index([templateId, startsAt])
+}
+
+model TournamentTimer {
+  id                   String                @id @default(cuid())
+  tournamentId         String                @unique
+  status               TournamentTimerStatus @default(READY)
+  currentLevelIndex    Int                   @default(0)
+  remainingSeconds     Int                   @default(0)
+  startedAt            DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  tournament           Tournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  levels               TournamentTimerLevel[]
+
+  @@index([status, updatedAt])
+}
+
+model TournamentTimerLevel {
+  id              String                   @id @default(cuid())
+  timerId         String
+  position        Int
+  kind            TournamentTimerLevelKind @default(LEVEL)
+  durationSeconds Int
+  smallBlind      Int?
+  bigBlind        Int?
+  ante            Int?
+  label           String?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  timer           TournamentTimer          @relation(fields: [timerId], references: [id], onDelete: Cascade)
+
+  @@unique([timerId, position])
+  @@index([timerId, position])
+}
+
+model TournamentResult {
+  id           String     @id @default(cuid())
+  tournamentId String
+  userId       String
+  place        Int
+  points       Int        @default(0)
+  isFinalTable Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, userId])
+  @@unique([tournamentId, place])
+  @@index([userId, createdAt])
+}
+
+model NotificationLog {
+  id           String     @id @default(cuid())
+  tournamentId String
+  sentCount    Int
+  failedCount  Int
+  createdAt    DateTime   @default(now())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+}
+
+model PointTransaction {
+  id             String               @id @default(cuid())
+  userId         String
+  seasonId       String
+  createdById    String
+  type           PointTransactionType
+  amount         Int
+  balanceAfter   Int
+  reason         String
+  idempotencyKey String?              @unique
+  batchId        String?
+  reversalOfId   String?              @unique
+  createdAt      DateTime             @default(now())
+  user           User                 @relation("PointRecipient", fields: [userId], references: [id], onDelete: Restrict)
+  createdBy      User                 @relation("PointAdmin", fields: [createdById], references: [id], onDelete: Restrict)
+  season         Season               @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  batch          PointBatch?          @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  reversalOf     PointTransaction?    @relation("TransactionReversal", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversedBy     PointTransaction?    @relation("TransactionReversal")
+
+  @@index([userId, seasonId, createdAt])
+  @@index([seasonId, createdAt])
+  @@index([createdById, createdAt])
+  @@index([batchId, createdAt])
+}
+
+model PointBatch {
+  id             String             @id @default(cuid())
+  tournamentId   String?            @unique
+  createdById    String
+  idempotencyKey String             @unique
+  note           String?
+  createdAt      DateTime           @default(now())
+  tournament     Tournament?        @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+  createdBy      User               @relation("PointBatchAdmin", fields: [createdById], references: [id], onDelete: Restrict)
+  transactions   PointTransaction[]
+
+  @@index([createdById, createdAt])
+}
+
+model TournamentRegistration {
+  id           String                       @id @default(cuid())
+  tournamentId String
+  userId       String
+  status       TournamentRegistrationStatus @default(REGISTERED)
+  createdAt    DateTime                     @default(now())
+  updatedAt    DateTime                     @updatedAt
+  promotedAt   DateTime?
+  checkedInAt  DateTime?
+  cancelledAt  DateTime?
+  tournament   Tournament                   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user         User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, userId])
+  @@index([tournamentId, status, createdAt])
+  @@index([userId, createdAt])
+}
+
+model TournamentPlayerAction {
+  id           String                     @id @default(cuid())
+  tournamentId String
+  userId       String
+  targetUserId String?
+  createdById  String
+  type         TournamentPlayerActionType
+  value        Int                        @default(1)
+  note         String?
+  createdAt    DateTime                   @default(now())
+  tournament   Tournament                 @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user         User                       @relation("TournamentActionPlayer", fields: [userId], references: [id], onDelete: Cascade)
+  targetUser   User?                      @relation("TournamentActionTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  createdBy    User                       @relation("TournamentActionAdmin", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([tournamentId, createdAt])
+  @@index([tournamentId, userId, type, createdAt])
+  @@index([targetUserId, createdAt])
+}
+
+model TournamentTemplate {
+  id                String       @id @default(cuid())
+  name              String
+  title             String
+  description       String?
+  location          String?
+  capacity          Int          @default(48)
+  recurrenceEnabled Boolean      @default(false)
+  nextStartsAt      DateTime?
+  weeksAhead        Int          @default(4)
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  tournaments       Tournament[]
+
+  @@index([recurrenceEnabled, isActive, nextStartsAt])
+}
+
+model ReasonPreset {
+  id            String           @id @default(cuid())
+  label         String
+  reason        String
+  kind          ReasonPresetKind @default(BOTH)
+  defaultAmount Int?
+  sortOrder     Int              @default(0)
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model PlayerTag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  color     String    @default("#3b8cff")
+  createdAt DateTime  @default(now())
+  users     UserTag[]
+}
+
+model UserTag {
+  userId String
+  tagId  String
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag    PlayerTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tagId])
+  @@index([tagId, userId])
+}
+
+model TournamentTable {
+  id           String           @id @default(cuid())
+  tournamentId String
+  number       Int
+  capacity     Int
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  tournament   Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  seats        TournamentSeat[]
+
+  @@unique([tournamentId, number])
+  @@index([tournamentId, number])
+}
+
+model TournamentSeat {
+  id           String          @id @default(cuid())
+  tournamentId String
+  tableId      String
+  userId       String
+  seatNumber   Int
+  assignedAt   DateTime        @default(now())
+  tournament   Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  table        TournamentTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, userId])
+  @@unique([tableId, seatNumber])
+  @@index([tournamentId, tableId])
+  @@index([userId, assignedAt])
+}
+
+model ClubSettings {
+  id                       String   @id @default("main")
+  ratingBannerImageData    String?  @db.Text
+  accentColor              String   @default("#3B8CFF")
+  trainingSheetUrl         String?  @db.Text
+  trainingLeadPopupEnabled Boolean  @default(false)
+  updatedAt                DateTime @updatedAt
+}
+
+model TrainingLead {
+  id                 String   @id @default(cuid())
+  userId             String
+  fullName           String
+  phoneNumber        String
+  preferredContactAt String
+  preferredVisitAt   String
+  sheetSyncedAt      DateTime?
+  sheetSyncError     String?  @db.Text
+  createdAt          DateTime @default(now())
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@index([sheetSyncedAt, createdAt])
+}
+
+model LoyaltySettings {
+  id                String   @id @default("main")
+  dailyHandXp       Int      @default(10)
+  referralInviterXp Int      @default(100)
+  referralInviteeXp Int      @default(50)
+  referralEnabled   Boolean  @default(true)
+  dailyHandEnabled  Boolean  @default(true)
+  tipsEnabled       Boolean  @default(true)
+  streakResetDays   Int      @default(21)
+  updatedAt         DateTime @updatedAt
+}
+
+model ClubXpTransaction {
+  id             String             @id @default(cuid())
+  userId         String
+  createdById    String?
+  source         ClubXpSource
+  amount         Int
+  balanceAfter   Int
+  reason         String
+  idempotencyKey String             @unique
+  metadata       Json?
+  reversalOfId   String?            @unique
+  createdAt      DateTime           @default(now())
+  user           User               @relation("ClubXpRecipient", fields: [userId], references: [id], onDelete: Restrict)
+  createdBy      User?              @relation("ClubXpAdmin", fields: [createdById], references: [id], onDelete: SetNull)
+  reversalOf     ClubXpTransaction? @relation("ClubXpReversal", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversedBy     ClubXpTransaction? @relation("ClubXpReversal")
+
+  @@index([userId, createdAt])
+  @@index([source, createdAt])
+  @@index([createdById, createdAt])
+}
+
+model PokerTip {
+  id        String   @id @default(cuid())
+  title     String
+  body      String   @db.Text
+  category  String   @default("Стратегия")
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model PokerHand {
+  id         String             @id @default(cuid())
+  title      String
+  scenario   String             @db.Text
+  heroCards  String[]
+  boardCards String[]
+  difficulty String             @default("Начальный")
+  sortOrder  Int                @default(0)
+  isActive   Boolean            @default(true)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  options    PokerHandOption[]
+  attempts   DailyHandAttempt[]
+
+  @@index([isActive, sortOrder])
+}
+
+model PokerHandOption {
+  id          String             @id @default(cuid())
+  handId      String
+  label       String
+  explanation String             @db.Text
+  isCorrect   Boolean            @default(false)
+  sortOrder   Int                @default(0)
+  hand        PokerHand          @relation(fields: [handId], references: [id], onDelete: Cascade)
+  attempts    DailyHandAttempt[]
+
+  @@index([handId, sortOrder])
+}
+
+model DailyHandAttempt {
+  id               String          @id @default(cuid())
+  userId           String
+  handId           String
+  selectedOptionId String
+  dayKey           String
+  isCorrect        Boolean
+  awardedXp        Int             @default(0)
+  attemptedAt      DateTime        @default(now())
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hand             PokerHand       @relation(fields: [handId], references: [id], onDelete: Restrict)
+  selectedOption   PokerHandOption @relation(fields: [selectedOptionId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, dayKey])
+  @@index([handId, attemptedAt])
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  key         String            @unique
+  title       String
+  description String
+  icon        String            @default("trophy")
+  rule        AchievementRule
+  threshold   Int               @default(1)
+  xpReward    Int               @default(0)
+  sortOrder   Int               @default(0)
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  users       UserAchievement[]
+
+  @@index([isActive, sortOrder])
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  xpAwarded     Int         @default(0)
+  unlockedAt    DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, achievementId])
+  @@index([userId, unlockedAt])
+}
+
+model Referral {
+  id            String         @id @default(cuid())
+  referrerId    String
+  invitedUserId String         @unique
+  status        ReferralStatus @default(PENDING)
+  inviterXp     Int            @default(0)
+  inviteeXp     Int            @default(0)
+  createdAt     DateTime       @default(now())
+  qualifiedAt   DateTime?
+  rewardedAt    DateTime?
+  rejectedAt    DateTime?
+  referrer      User           @relation("ReferralInviter", fields: [referrerId], references: [id], onDelete: Restrict)
+  invitedUser   User           @relation("ReferralInvitee", fields: [invitedUserId], references: [id], onDelete: Restrict)
+
+  @@index([referrerId, status, createdAt])
+  @@index([status, createdAt])
+}
+
+model AnalyticsEvent {
+  id             String   @id @default(cuid())
+  userId         String?
+  type           String
+  idempotencyKey String?  @unique
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([type, createdAt])
+  @@index([userId, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  summary    String
+  before     Json?
+  after      Json?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@index([entityType, entityId, createdAt])
+  @@index([action, createdAt])
+}
+
+model SeasonStanding {
+  id        String   @id @default(cuid())
+  seasonId  String
+  userId    String
+  rank      Int
+  points    Int
+  createdAt DateTime @default(now())
+  season    Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([seasonId, userId])
+  @@unique([seasonId, rank])
+  @@index([userId, createdAt])
+}
