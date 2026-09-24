@@ -1,15 +1,57 @@
-# PERFORMANCE HUD UI v1.21
+# Poker Club — HUD UI redesign
 
-Это не CSS-скин поверх старого интерфейса. В v1.21 изменена композиция AppShell и главного экрана.
+This build keeps the existing navigation, routes, API contracts and core user/admin workflows, while replacing the player-facing visual system with a performance-dashboard / tournament-HUD aesthetic.
 
-## Как проверить, что залита именно новая версия
+## What changed
 
-Сразу после запуска сверху приложения должна быть тонкая системная строка с `CLUB SYSTEM`, `LIVE` и `V1.21 / PERFORMANCE UI`. Нижнее меню — пять прямоугольных сегментов; активный пункт полностью оранжевый. На главной вместо старой фиолетово-синей hero-карточки расположен приборный модуль с большим номером позиции и круглым rank-циферблатом.
+- New graphite + safety-orange visual system across the Mini App.
+- Existing 5-item bottom navigation and route structure are unchanged.
+- Home, tournaments, rating, privileges, profile, browser login and common cards/forms were restyled without removing features.
+- Admin area remains deliberately simpler and function-first.
+- Tournament TV timer was rebuilt as a full-screen HUD:
+  - large circular central countdown;
+  - current level / blinds / ante panel;
+  - next level and upcoming-level queue;
+  - wall clock and date;
+  - full-screen mode;
+  - existing start/pause/next/previous/add-time/reset controls retained for admins;
+  - configurable top and bottom scrolling tickers.
+- Ticker text and speed are stored in PostgreSQL per tournament, so a TV/browser opened on another device receives the same messages.
 
-## Сохранено
+## Database migration
 
-Все пять пунктов навигации, их маршруты, API-вызовы, регистрация на турниры, рейтинг, привилегии, профиль, админка и авторизация.
+A new migration is included:
 
-## Таймер
+`apps/api/prisma/migrations/202609240001_hud_timer_display/migration.sql`
 
-TV-таймер остаётся отдельным HUD-экраном с центральным круговым таймером и настройками верхней/нижней бегущей строки.
+It adds these nullable/safe fields to `TournamentTimer`:
+
+- `topTicker`
+- `bottomTicker`
+- `tickerSpeed`
+
+It also changes the default club accent from the previous blue to `#FF3D0A` and migrates the old default blue setting to the new orange.
+
+The migration does not delete tournaments, players, registrations, points or timer levels.
+
+## Vercel deployment
+
+The existing Vercel build flow already runs `prisma migrate deploy` in Production. In normal use:
+
+1. Replace/update the repository files with this archive.
+2. Commit to the production branch.
+3. Let Vercel create a new Production deployment.
+4. Open `/api/health` first.
+5. Open the Mini App and a tournament timer.
+
+No new environment variables are required for this UI update.
+
+## Timer ticker settings
+
+Open a tournament TV timer as an ADMIN and use the settings button in the timer header. You can edit:
+
+- top ticker text;
+- bottom ticker text;
+- scrolling duration/speed.
+
+Saving writes the settings to the tournament timer in PostgreSQL.

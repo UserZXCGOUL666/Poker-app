@@ -11,6 +11,9 @@ const timer: TournamentTimer = {
   remainingSeconds: 30,
   serverNow: '2026-07-27T12:00:00.000Z',
   updatedAt: '2026-07-27T12:00:00.000Z',
+  topTicker: null,
+  bottomTicker: null,
+  tickerSpeed: 28,
   levels: [
     { id: '1', position: 0, kind: 'LEVEL', durationSeconds: 60, smallBlind: 25, bigBlind: 50, ante: 0, label: null },
     { id: '2', position: 1, kind: 'BREAK', durationSeconds: 120, smallBlind: null, bigBlind: null, ante: null, label: 'Перерыв' }

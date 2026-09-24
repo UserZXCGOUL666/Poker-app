@@ -1,6 +1,6 @@
 {
   "name": "poker-club-mini-app",
-  "version": "1.21.0",
+  "version": "1.19.0",
   "private": true,
   "workspaces": [
     "apps/*"
