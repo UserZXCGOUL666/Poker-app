@@ -20,21 +20,27 @@ export function AppShell() {
 
   if (adminMode) return <Outlet />;
   return (
-    <div className={`app-shell ${gamesMode ? 'app-shell-games' : ''}`}>
-      <header className="brand-header">
-        <div className="brand-mark" aria-hidden="true">♠</div>
-        <div className="brand-copy"><strong>POKER CLUB</strong><span>SPORTS LEAGUE · LIVE SYSTEM</span></div>
+    <div className={`app-shell hud-v2-shell ${gamesMode ? 'app-shell-games' : ''}`}>
+      <div className="hud-system-rail" aria-hidden="true">
+        <span><i /> CLUB SYSTEM</span>
+        <b>LIVE</b>
+        <span>V1.21 / PERFORMANCE UI</span>
+      </div>
+      <header className="brand-header hud-v2-header">
+        <div className="brand-mark hud-v2-brand-mark" aria-hidden="true">PL</div>
+        <div className="brand-copy"><strong>POKER CLUB</strong><span>SPORTS LEAGUE / CONTROL SYSTEM</span></div>
+        <div className="hud-header-status"><i /> ONLINE</div>
         <div className="header-actions">
-          {user?.role === 'ADMIN' && <NavLink className="admin-shortcut" to="/admin" aria-label="Админка"><ShieldCheck size={19} /></NavLink>}
+          {user?.role === 'ADMIN' && <NavLink className="admin-shortcut" to="/admin" aria-label="Админка"><ShieldCheck size={18} /></NavLink>}
           {user && <NavLink className="header-profile-link" to="/profile" aria-label="Открыть профиль"><Avatar firstName={user.firstName} lastName={user.lastName} photoUrl={user.photoUrl} /></NavLink>}
         </div>
       </header>
       <main className="app-content"><Outlet /></main>
       <TrainingLeadPopup />
-      <nav className="bottom-nav">
-        {navItems.map(({ to, label, icon: Icon }) => (
+      <nav className="bottom-nav hud-v2-nav">
+        {navItems.map(({ to, label, icon: Icon }, index) => (
           <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => isActive ? 'active' : ''}>
-            <Icon size={22} strokeWidth={1.9} /><span>{label}</span>
+            <small>0{index + 1}</small><Icon size={20} strokeWidth={1.8} /><span>{label}</span>
           </NavLink>
         ))}
       </nav>

@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ACCENT_STORAGE_KEY, applyAccentColor } from './lib/theme';
 import './styles.css';
 import './hud-theme.css';
+import './hud-v2.css';
 
 applyAccentColor(localStorage.getItem(ACCENT_STORAGE_KEY));
 
