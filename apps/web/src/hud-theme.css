@@ -1,0 +1,643 @@
+/*
+ * POKER CLUB — Instrument HUD visual system
+ * Inspired by performance dashboards: graphite, safety orange, hard geometry,
+ * technical labels, tabular numerals and deliberate visual density.
+ */
+:root {
+  --hud-bg: #090a0b;
+  --hud-panel: #121416;
+  --hud-panel-2: #17191c;
+  --hud-panel-3: #1d2023;
+  --hud-line: #34383d;
+  --hud-line-hot: rgba(255, 61, 10, .58);
+  --hud-accent: var(--blue, #ff3d0a);
+  --hud-accent-2: #ff6a22;
+  --hud-yellow: #ffd335;
+  --hud-mint: #69e4c1;
+  --hud-text: #f7f4ed;
+  --hud-muted: #8d9298;
+  --hud-dim: #5f646a;
+  --hud-danger: #ff5f5f;
+  --radius: 8px;
+  --bg: var(--hud-bg);
+  --surface: var(--hud-panel);
+  --surface-2: var(--hud-panel-2);
+  --line: var(--hud-line);
+  --border: var(--hud-line);
+  --text: var(--hud-text);
+  --muted: var(--hud-muted);
+  --green: var(--hud-mint);
+  --danger: var(--hud-danger);
+}
+
+html { background: #050607; }
+body {
+  color: var(--hud-text);
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
+    radial-gradient(circle at 52% -12%, rgba(var(--accent-rgb),.14), transparent 34%),
+    #050607;
+  background-size: 28px 28px, 28px 28px, auto, auto;
+  font-family: Bahnschrift, "Arial Narrow", "Roboto Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+::selection { color: #0a0a0a; background: var(--hud-accent); }
+
+.app-shell {
+  width: min(100%, 490px);
+  background:
+    linear-gradient(180deg, rgba(var(--accent-rgb),.035), transparent 110px),
+    linear-gradient(180deg, #101214 0, #0a0b0d 100%);
+  border-color: #292c30;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.02), 0 30px 100px rgba(0,0,0,.48);
+}
+
+.brand-header {
+  min-height: 90px;
+  gap: 11px;
+  padding: calc(13px + max(env(safe-area-inset-top), var(--telegram-content-top))) 18px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.brand-header::after {
+  content: '';
+  position: absolute;
+  top: calc(80px + max(env(safe-area-inset-top), var(--telegram-content-top)));
+  left: 18px;
+  width: 52px;
+  height: 2px;
+  background: var(--hud-accent);
+  box-shadow: 58px 0 0 rgba(var(--accent-rgb),.2);
+}
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  color: #080808;
+  background: var(--hud-accent);
+  border: 1px solid #ff7a4f;
+  box-shadow: none;
+  font-size: 23px;
+}
+.brand-copy strong {
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: .14em;
+  font-weight: 850;
+}
+.brand-copy span, .season-line {
+  color: var(--hud-muted);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.header-actions { gap: 7px; }
+.admin-shortcut {
+  border-color: #3d4146;
+  color: var(--hud-accent);
+  border-radius: 8px;
+  background: #141618;
+}
+.avatar { color: var(--hud-accent); background: #17191c; border-color: #474b50; }
+.avatar-md, .avatar-lg { border-color: var(--hud-accent); }
+.avatar-lg { box-shadow: 0 0 0 5px rgba(var(--accent-rgb),.1); }
+
+.app-content { padding: 0 18px calc(98px + env(safe-area-inset-bottom)); }
+.page { animation: hudEnter .22s cubic-bezier(.2,.8,.2,1); }
+@keyframes hudEnter { from { opacity: 0; transform: translateY(5px); filter: blur(2px); } }
+
+.page-heading { margin: 16px 0 22px; }
+.page-heading .eyebrow, .admin-heading > span {
+  color: var(--hud-accent);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: .18em;
+}
+.page-heading h1 {
+  margin: 7px 0 5px;
+  font-size: clamp(29px, 8vw, 38px);
+  line-height: .96;
+  letter-spacing: -.045em;
+  text-transform: uppercase;
+}
+.page-heading p { color: var(--hud-muted); font-size: 12px; }
+
+.card {
+  border: 1px solid var(--hud-line);
+  border-radius: 8px;
+  background: linear-gradient(145deg, #17191c, #101214);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.card::selection { background: var(--hud-accent); }
+.section-title { margin: 24px 0 11px; }
+.section-title h2 { font-size: 16px; letter-spacing: -.01em; text-transform: uppercase; }
+.section-title a { color: var(--hud-accent); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; }
+
+/* Home / dashboard */
+.home-page .season-line { margin: 7px 0 13px; padding-left: 11px; border-left: 2px solid var(--hud-accent); }
+.home-overview-card {
+  min-height: 246px;
+  grid-template-columns: .92fr 1.35fr;
+  border: 1px solid #3a3e42;
+  border-radius: 9px;
+  background:
+    linear-gradient(90deg, rgba(var(--accent-rgb),.09), transparent 36%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 22px),
+    #111315;
+  box-shadow: none;
+}
+.home-overview-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-top: 2px solid var(--hud-accent);
+  clip-path: polygon(0 0, 34% 0, 38% 2px, 100% 2px, 100% 100%, 0 100%);
+}
+.home-player-summary, .home-tournament-summary { padding: 19px; }
+.home-player-summary { border-right-color: #34383d; }
+.home-player-summary small, .home-tournament-summary > small,
+.home-rank-column small, .home-xp-column small,
+.home-leaders header, .home-results-block header {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: .12em;
+}
+.home-player-summary h1 { color: var(--hud-yellow); font-size: 18px; margin: 10px 0 17px; }
+.home-player-summary > span { color: var(--hud-muted); font-size: 9px; text-transform: uppercase; }
+.home-player-summary > strong { color: #fff; font-family: ui-monospace, Consolas, monospace; font-size: 50px; letter-spacing: -.08em; line-height: 1; }
+.home-player-summary > em { color: var(--hud-dim); font-style: normal; font-size: 9px; }
+.home-tournament-summary > small { color: var(--hud-accent); }
+.home-tournament-link h2 { margin-top: 12px; font-size: 20px; line-height: 1.05; text-transform: uppercase; }
+.home-tournament-link p { color: var(--hud-text); font-family: ui-monospace, Consolas, monospace; }
+.home-tournament-link span { color: var(--hud-muted); }
+.home-registration-button {
+  min-height: 44px;
+  border: 1px solid var(--hud-accent);
+  border-radius: 5px;
+  color: #080808;
+  background: var(--hud-accent);
+  box-shadow: none;
+  text-transform: uppercase;
+  letter-spacing: .055em;
+}
+.home-registration-button.registered { color: var(--hud-mint); border-color: rgba(105,228,193,.38); background: rgba(105,228,193,.08); }
+.home-xp-card {
+  min-height: 122px;
+  margin-top: 14px;
+  grid-template-columns: .9fr 1.45fr 20px;
+  border-color: #383c40;
+  border-radius: 8px;
+  background: linear-gradient(104deg, #151719 0 45%, #1a1612 100%);
+}
+.home-xp-progress { height: 3px; background: #292c2f; }
+.home-xp-progress i { background: var(--hud-accent); }
+.home-rank-column { border-right-color: #383c40; }
+.home-rank-column strong, .home-xp-column strong { font-size: 21px; }
+.home-xp-column strong { color: var(--hud-yellow); font-family: ui-monospace, Consolas, monospace; }
+.home-xp-column span { color: var(--hud-muted); }
+.home-xp-chevron { color: var(--hud-accent); }
+
+.home-leaders, .home-results-block { margin-top: 14px; }
+.home-leaders > header, .home-results-block > header { border-bottom-color: #32363a; }
+.home-leaders header svg, .home-results-block header svg { color: var(--hud-accent); }
+.home-leader-row { border-bottom-color: #292d31; }
+.home-leader-row:hover { background: rgba(var(--accent-rgb),.035); }
+.home-leader-place { color: var(--hud-yellow); }
+.home-leader-row b { color: var(--hud-text); font-family: ui-monospace, Consolas, monospace; }
+.home-result-metrics > div { border-right-color: #32363a; }
+.home-result-metrics span { color: var(--hud-muted); text-transform: uppercase; font-size: 8px; letter-spacing: .05em; }
+.home-result-metrics strong { font-family: ui-monospace, Consolas, monospace; font-size: 28px; }
+.home-full-stats { color: var(--hud-accent); border-top-color: #32363a; text-transform: uppercase; }
+
+/* Daily engagement */
+.loyalty-strip { border-color: #3d4145; border-radius: 7px; background: #151719; }
+.loyalty-strip > span { color: #050505; border-radius: 5px; background: var(--hud-yellow); }
+.loyalty-strip small { color: var(--hud-yellow); }
+.loyalty-strip .loyalty-strip-action { color: var(--hud-accent); }
+.daily-tip-card, .daily-hand-card { border-radius: 8px; background: linear-gradient(140deg, #17191c, #111315); }
+.daily-tip-card { border-left: 3px solid var(--hud-yellow); }
+.daily-hand-card { border-left: 3px solid var(--hud-accent); }
+.daily-tip-card > span, .daily-hand-card > header > span { border-radius: 5px; }
+.hand-options button { border-color: #3a3e42; border-radius: 6px; background: #151719; }
+.hand-options button:not(:disabled):hover { border-color: var(--hud-accent); background: #181a1d; }
+.playing-card { border-radius: 4px; }
+
+/* Tournament diary */
+.games-diary-page { max-width: 920px; }
+.games-diary-heading { align-items: center; }
+.week-navigation {
+  border-color: #3a3e42;
+  border-radius: 7px;
+  background: #151719;
+}
+.week-navigation > button { border-color: #3b3f44; border-radius: 5px; color: var(--hud-text); background: #1d2023; }
+.week-navigation span { color: var(--hud-muted); }
+.week-navigation .week-today-button { color: var(--hud-accent); }
+.week-diary { border-color: #3b3f43; border-radius: 8px; background: #101214; box-shadow: none; }
+.week-day-row { border-bottom-color: #303438; }
+.week-day-row.is-today { background: linear-gradient(90deg, rgba(var(--accent-rgb),.08), transparent 50%); }
+.week-day-label { border-right-color: #303438; }
+.week-day-label strong { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.week-day-label span { color: var(--hud-muted); }
+.week-day-label em { border-radius: 4px; color: var(--hud-muted); background: #1b1e21; }
+.week-day-row.is-today .week-day-label em { color: #070707; background: var(--hud-accent); }
+.diary-tournament {
+  min-height: 84px;
+  border-color: #383c40;
+  border-radius: 5px;
+  background: #17191c;
+}
+.diary-tournament::before { background: var(--hud-accent); }
+.diary-active { border-color: rgba(105,228,193,.35); background: linear-gradient(145deg, rgba(105,228,193,.08), #151719); }
+.diary-active::before { background: var(--hud-mint); }
+.diary-title-row h2 { font-size: 15px; text-transform: uppercase; }
+.diary-status { border-radius: 4px; }
+.diary-status-upcoming { color: #111; border-color: var(--hud-yellow); background: var(--hud-yellow); }
+.diary-status-active { color: #08120f; border-color: var(--hud-mint); background: var(--hud-mint); }
+.diary-meta { color: var(--hud-muted); font-family: ui-monospace, Consolas, monospace; }
+.diary-actions > button, .diary-timer-button { border-radius: 5px; text-transform: uppercase; letter-spacing: .04em; }
+.diary-register-button { color: #090909; border-color: var(--hud-accent); background: var(--hud-accent); box-shadow: none; }
+.diary-register-button.registered { color: var(--hud-mint); border-color: rgba(105,228,193,.35); background: rgba(105,228,193,.08); }
+.diary-timer-button { color: var(--hud-text); border-color: #484d52; background: #202326; }
+
+/* Rankings */
+.segmented { border-color: #3b3f43; border-radius: 6px; background: #151719; }
+.segmented button { border-radius: 4px; color: var(--hud-muted); text-transform: uppercase; font-size: 10px; letter-spacing: .05em; }
+.segmented button.active { color: #0a0a0a; background: var(--hud-accent); box-shadow: none; }
+.search-field { border-color: #3b3f43; border-radius: 5px; background: #151719; }
+.search-field input { color: var(--hud-text); }
+.ranking-table { border-top: 1px solid #383c40; }
+.ranking-row { min-height: 64px; border-bottom-color: #303438; }
+.ranking-row > div span { color: var(--hud-muted); }
+.ranking-row > b { font-family: ui-monospace, Consolas, monospace; }
+.ranking-place { color: var(--hud-muted); font-family: ui-monospace, Consolas, monospace; }
+.top-1 { background: linear-gradient(90deg, rgba(255,211,53,.12), transparent 70%); }
+.top-1 .ranking-place { color: var(--hud-yellow); }
+.top-2 .ranking-place { color: #c7ccd1; }
+.top-3 .ranking-place { color: #ca7c51; }
+
+/* Profile / rewards */
+.profile-hero { padding-top: 18px; }
+.profile-hero h1 { font-size: 26px; text-transform: uppercase; }
+.profile-hero p { color: var(--hud-muted); }
+.profile-edit-button, .admin-pill { border-radius: 5px; }
+.profile-edit-button { color: var(--hud-accent); border-color: #44484d; background: #17191c; }
+.admin-pill { color: #080b09; border-color: var(--hud-mint); background: var(--hud-mint); }
+.profile-stats { border-color: #34383c; }
+.profile-stats button { border-right-color: #34383c; }
+.profile-stats svg { color: var(--hud-accent); }
+.profile-stats strong { font-family: ui-monospace, Consolas, monospace; }
+.profile-tabs { border-color: #3a3e42; border-radius: 6px; background: #111315; }
+.profile-tabs button { border-radius: 4px; color: var(--hud-muted); }
+.profile-tabs button.active { color: #0a0a0a; background: var(--hud-accent); }
+.xp-balance-card, .privileges-balance {
+  border-color: #3d4145;
+  border-radius: 7px;
+  background: linear-gradient(120deg, #151719, #1d1712);
+}
+.xp-balance-card > span, .privileges-balance > span { color: #0b0b0b; border-radius: 5px; background: var(--hud-yellow); }
+.xp-balance-card small, .privileges-balance small { color: var(--hud-yellow); }
+.privileges-balance > svg { color: var(--hud-accent); }
+.privileges-menu { border-radius: 7px; }
+.privileges-menu > button { border-bottom-color: #303438; }
+.privileges-menu > button > span { color: #080808; border-radius: 5px; background: var(--hud-accent); }
+.privileges-coming-soon { color: var(--hud-muted); }
+.achievement-card, .achievement-summary, .history-list, .points-history, .referral-list, .telegram-id, .upcoming-profile-list, .profile-achievements-entry { border-radius: 7px; }
+.achievement-card.unlocked { border-color: rgba(var(--accent-rgb),.55); }
+.achievement-progress > i { background: var(--hud-accent); }
+
+/* Buttons / inputs */
+.button { border-radius: 5px !important; text-transform: uppercase; letter-spacing: .045em; }
+.button.primary { color: #090909; border-color: var(--hud-accent); background: var(--hud-accent); box-shadow: none; }
+.button.secondary { color: var(--hud-text); border-color: #42464b; background: #191b1e; }
+input, select, textarea { color: var(--hud-text); }
+input:focus, select:focus, textarea:focus { border-color: var(--hud-accent) !important; box-shadow: 0 0 0 2px rgba(var(--accent-rgb),.1); outline: none; }
+.form-error { border-color: rgba(255,95,95,.35); background: rgba(255,95,95,.08); }
+
+/* Bottom navigation — keep the same five items and routing. */
+.bottom-nav {
+  width: min(100%, 488px);
+  height: calc(74px + env(safe-area-inset-bottom));
+  padding: 7px 9px env(safe-area-inset-bottom);
+  gap: 3px;
+  border-top: 1px solid #3a3e42;
+  background: rgba(11,12,14,.97);
+  backdrop-filter: blur(18px);
+}
+.bottom-nav::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 16px;
+  width: 64px;
+  height: 2px;
+  background: var(--hud-accent);
+}
+.bottom-nav a { gap: 5px; border: 1px solid transparent; border-radius: 5px; color: #9ba0a6; font-size: 8px; text-transform: uppercase; letter-spacing: .03em; }
+.bottom-nav a svg { width: 20px; }
+.bottom-nav a.active { color: #090909; border-color: var(--hud-accent); background: var(--hud-accent); }
+
+/* Browser login */
+.browser-login-shell {
+  background:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px),
+    radial-gradient(circle at 50% 10%, rgba(var(--accent-rgb),.14), transparent 30%),
+    #08090a !important;
+  background-size: 28px 28px, 28px 28px, auto, auto !important;
+}
+.browser-login-card { border-color: #3d4145 !important; border-radius: 8px !important; background: #111315 !important; box-shadow: 0 30px 90px rgba(0,0,0,.45) !important; }
+.browser-login-card > header > span { color: #090909 !important; background: var(--hud-accent) !important; border-radius: 5px !important; }
+.browser-login-card > header small { color: var(--hud-accent) !important; }
+.browser-login-card input { border-color: #404449 !important; border-radius: 5px !important; background: #17191c !important; }
+.browser-login-methods, .browser-email-modes { border-color: #3b3f43 !important; border-radius: 6px !important; background: #0e1012 !important; }
+.browser-login-methods button, .browser-email-modes button { border-radius: 4px !important; }
+.browser-login-methods button.active, .browser-email-modes button.active { color: #090909 !important; background: var(--hud-accent) !important; }
+.browser-login-bot { border-radius: 5px !important; color: #090909 !important; background: var(--hud-mint) !important; }
+
+/* Admin: intentionally calmer / simpler. */
+.admin-page, .main-tournament-workspace { --hud-accent: var(--blue, #ff3d0a); }
+.admin-sidebar, .admin-content, .admin-card, .admin-panel, .main-workspace { background-color: #111315 !important; }
+.admin-sidebar { border-right-color: #34383d !important; }
+.admin-nav button.active, .admin-nav a.active { color: #0a0a0a !important; background: var(--hud-accent) !important; }
+.admin-stat-grid > article, .admin-alert { border-radius: 6px !important; }
+
+/* Compact timer inside admin */
+.timer-console { border-color: #3e4246; border-radius: 7px; background: #121416; box-shadow: none; }
+.timer-console > header { border-bottom-color: #34383d; }
+.timer-kicker { color: var(--hud-accent) !important; }
+.timer-stage { background: radial-gradient(circle at center, rgba(var(--accent-rgb),.08), transparent 45%); }
+.timer-current > span, .timer-next > span { color: var(--hud-muted); }
+.timer-current > strong, .timer-clock { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
+.timer-clock { color: var(--hud-text); text-shadow: none; }
+.timer-progress { background: #292c2f !important; }
+.timer-progress i { background: var(--hud-accent) !important; }
+.timer-controls { border-top-color: #34383d; background: #0e1012; }
+.timer-controls button { border-color: #3f4347; border-radius: 5px; background: #17191c; }
+.timer-controls .timer-main-control { color: #090909; border-color: var(--hud-accent); background: var(--hud-accent); box-shadow: none; }
+.timer-controls .timer-main-control.pause { color: #090909; border-color: var(--hud-yellow); background: var(--hud-yellow); }
+.timer-level-overview, .timer-structure-editor { border-radius: 7px !important; }
+.timer-level-strip button.active { border-color: var(--hud-accent) !important; background: rgba(var(--accent-rgb),.08) !important; }
+
+/* ================================
+   Full-screen tournament HUD
+   ================================ */
+.hud-timer-screen {
+  --hud-screen-accent: var(--hud-accent);
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 32px auto 1fr auto 32px;
+  color: #f7f4ed;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(var(--accent-rgb),.08), transparent 29%),
+    linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px),
+    #090a0b;
+  background-size: auto, 32px 32px, 32px 32px, auto;
+}
+.hud-timer-screen.is-break { --hud-screen-accent: #ffd335; }
+
+.hud-marquee {
+  position: relative;
+  z-index: 6;
+  width: 100%;
+  overflow: hidden;
+  color: #080808;
+  background: var(--hud-screen-accent);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: clamp(10px, .78vw, 14px);
+  font-weight: 900;
+  line-height: 32px;
+  letter-spacing: .12em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.hud-marquee > div { width: max-content; display: flex; animation: hudTicker var(--ticker-speed, 28s) linear infinite; }
+.hud-marquee span { display: inline-block; min-width: max-content; padding-right: 1.5rem; }
+.hud-marquee-bottom > div { animation-direction: reverse; }
+@keyframes hudTicker { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .hud-marquee > div { animation-play-state: paused; } }
+
+.hud-timer-header {
+  min-height: 76px;
+  display: grid;
+  grid-template-columns: auto minmax(220px, 1fr) auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 11px 2.2vw;
+  border-bottom: 1px solid #383c40;
+  background: rgba(10,11,12,.9);
+}
+.hud-timer-brand { display: flex; min-width: 0; align-items: center; gap: 12px; }
+.hud-spade { width: 42px; height: 42px; display: grid; place-items: center; flex: none; color: #080808; background: var(--hud-screen-accent); border-radius: 5px; font-size: 26px; }
+.hud-timer-brand > div { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.hud-timer-brand strong { font-size: clamp(15px, 1.35vw, 22px); letter-spacing: .18em; }
+.hud-timer-brand small { color: var(--hud-muted); font-family: ui-monospace, Consolas, monospace; font-size: clamp(7px, .55vw, 10px); letter-spacing: .2em; }
+.hud-wall-clock { display: flex; align-items: flex-end; flex-direction: column; gap: 1px; padding-left: 20px; border-left: 1px solid #3a3e42; font-family: ui-monospace, Consolas, monospace; }
+.hud-wall-clock strong { font-size: clamp(22px, 2vw, 35px); line-height: .95; }
+.hud-wall-clock span { color: var(--hud-muted); font-size: clamp(8px, .65vw, 11px); text-transform: uppercase; }
+.hud-timer-tools { display: flex; gap: 7px; }
+.hud-ghost-button, .hud-icon-button {
+  min-height: 39px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  color: #d0d2d4;
+  border: 1px solid #41454a;
+  border-radius: 5px;
+  background: #151719;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.hud-ghost-button svg, .hud-icon-button svg { width: 16px; }
+.hud-icon-button { width: 39px; padding: 0; color: var(--hud-screen-accent); }
+
+.hud-timer-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(250px, .78fr) minmax(430px, 1.35fr) minmax(280px, .86fr);
+  align-items: stretch;
+  gap: clamp(12px, 1.3vw, 22px);
+  padding: clamp(14px, 2vh, 24px) clamp(16px, 2.1vw, 34px);
+}
+.hud-timer-panel {
+  position: relative;
+  overflow: hidden;
+  align-self: center;
+  padding: clamp(20px, 2vw, 34px);
+  border: 1px solid #3b3f43;
+  border-radius: 8px;
+  background: linear-gradient(145deg, rgba(25,27,29,.96), rgba(13,14,15,.98));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.hud-current-panel { border-color: color-mix(in srgb, var(--hud-screen-accent) 70%, #3b3f43); }
+.hud-current-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 38%; height: 3px;
+  background: var(--hud-screen-accent);
+}
+.hud-panel-kicker { color: var(--hud-muted); font-family: ui-monospace, Consolas, monospace; font-size: clamp(8px, .7vw, 12px); font-weight: 900; letter-spacing: .18em; }
+.hud-current-panel h1 { margin: clamp(14px, 2vh, 28px) 0; font-size: clamp(30px, 3.2vw, 58px); line-height: .92; letter-spacing: -.04em; text-transform: uppercase; }
+.hud-tag-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.hud-tag-row span { padding: 7px 10px; color: #bbbfc4; border: 1px solid #41454a; border-radius: 4px; font-family: ui-monospace, Consolas, monospace; font-size: clamp(8px, .6vw, 11px); font-weight: 800; letter-spacing: .06em; }
+.hud-tag-row .hot { color: #080808; border-color: var(--hud-screen-accent); background: var(--hud-screen-accent); }
+.hud-rule { height: 1px; margin: clamp(18px, 2.4vh, 30px) 0; background: #383c40; }
+.hud-stat-pair { display: grid; grid-template-columns: 1.25fr .75fr; }
+.hud-stat-pair > div { padding-right: 18px; }
+.hud-stat-pair > div + div { padding-left: 18px; border-left: 1px solid #3a3e42; }
+.hud-stat-pair span, .hud-next-grid span { display: block; color: var(--hud-muted); font-family: ui-monospace, Consolas, monospace; font-size: clamp(8px, .65vw, 11px); letter-spacing: .12em; }
+.hud-stat-pair strong { display: block; margin-top: 8px; font-family: ui-monospace, Consolas, monospace; font-size: clamp(30px, 3.2vw, 60px); letter-spacing: -.06em; white-space: nowrap; }
+.hud-mini-status { display: flex; align-items: center; gap: 12px; margin-top: clamp(18px, 2.4vh, 30px); padding-top: 16px; border-top: 1px solid #303438; }
+.hud-mini-status > svg { color: var(--hud-screen-accent); }
+.hud-mini-status div { display: flex; flex-direction: column; gap: 2px; }
+.hud-mini-status span { color: var(--hud-muted); font-size: 8px; letter-spacing: .12em; }
+.hud-mini-status strong { font-family: ui-monospace, Consolas, monospace; font-size: 18px; }
+
+.hud-clock-stage { min-width: 0; display: grid; place-items: center; }
+.hud-dial {
+  --dial-progress: 300deg;
+  position: relative;
+  width: min(43vw, 58vh, 630px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #101214 0 47%, transparent 47.5%),
+    conic-gradient(from -150deg, var(--hud-screen-accent) 0 var(--dial-progress), #2b2e31 var(--dial-progress) 300deg, transparent 300deg 360deg);
+  filter: drop-shadow(0 0 34px rgba(var(--accent-rgb),.09));
+}
+.hud-dial::before {
+  content: '';
+  position: absolute;
+  inset: 3.1%;
+  border: 1px solid #3e4246;
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(from -150deg, rgba(255,255,255,.6) 0 1deg, transparent 1deg 6deg),
+    #0c0d0f;
+  mask: radial-gradient(circle, transparent 0 77%, #000 77.4% 100%);
+  opacity: .5;
+}
+.hud-dial::after {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border: 1px solid #34383c;
+  border-radius: 50%;
+  box-shadow: inset 0 0 40px rgba(0,0,0,.65), 0 0 0 12px rgba(255,255,255,.012);
+}
+.hud-dial-scale { position: absolute; inset: 20%; border: 1px dashed #33373b; border-radius: 50%; opacity: .65; }
+.hud-dial-core { position: relative; z-index: 2; display: flex; align-items: center; flex-direction: column; text-align: center; }
+.hud-dial-core > span { color: var(--hud-muted); font-family: ui-monospace, Consolas, monospace; font-size: clamp(9px, .8vw, 14px); font-weight: 900; letter-spacing: .22em; }
+.hud-dial-core > strong { margin: clamp(9px, 1.2vh, 18px) 0; color: var(--hud-screen-accent); font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: clamp(72px, 8.2vw, 150px); line-height: .82; letter-spacing: -.08em; font-variant-numeric: tabular-nums; text-shadow: 0 0 24px color-mix(in srgb, var(--hud-screen-accent) 26%, transparent); }
+.hud-dial-core > em { padding: 6px 11px; color: #080808; border-radius: 4px; background: var(--hud-screen-accent); font-family: ui-monospace, Consolas, monospace; font-size: clamp(8px, .7vw, 12px); font-style: normal; font-weight: 900; letter-spacing: .12em; }
+
+.hud-next-panel h2 { margin: clamp(16px, 2vh, 28px) 0; color: var(--hud-screen-accent); font-family: ui-monospace, Consolas, monospace; font-size: clamp(33px, 3vw, 54px); line-height: .95; letter-spacing: -.055em; }
+.hud-next-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #383c40; border-bottom: 1px solid #383c40; }
+.hud-next-grid > div { min-height: 80px; padding: 16px 12px 14px 0; }
+.hud-next-grid > div:nth-child(even) { padding-left: 14px; border-left: 1px solid #383c40; }
+.hud-next-grid > div:last-child { grid-column: 1 / -1; border-top: 1px solid #383c40; border-left: 0; }
+.hud-next-grid strong { display: block; margin-top: 6px; font-family: ui-monospace, Consolas, monospace; font-size: clamp(17px, 1.35vw, 24px); }
+.hud-level-list { display: grid; gap: 5px; margin-top: 16px; }
+.hud-level-list > div { min-height: 40px; display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 8px; padding: 0 10px; color: #8e9399; border: 1px solid #303438; border-radius: 4px; font-family: ui-monospace, Consolas, monospace; }
+.hud-level-list > div.active { color: #090909; border-color: var(--hud-screen-accent); background: var(--hud-screen-accent); }
+.hud-level-list span { font-weight: 900; }
+.hud-level-list strong { font-size: 14px; }
+.hud-level-list small { font-size: 10px; }
+
+.hud-timer-controls {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-top: 1px solid #373b3f;
+  background: #0d0f10;
+}
+.hud-timer-controls button {
+  min-height: 45px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 16px;
+  color: #c8cbce;
+  border: 1px solid #41454a;
+  border-radius: 5px;
+  background: #17191c;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.hud-timer-controls button svg { width: 17px; }
+.hud-timer-controls button:disabled { opacity: .35; cursor: default; }
+.hud-timer-controls button.primary { min-width: 150px; color: #090909; border-color: var(--hud-screen-accent); background: var(--hud-screen-accent); }
+.hud-timer-controls button.primary.pause { border-color: var(--hud-yellow); background: var(--hud-yellow); }
+
+.hud-settings-backdrop { position: fixed; z-index: 80; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(0,0,0,.72); backdrop-filter: blur(10px); }
+.hud-settings-panel { width: min(620px, 100%); padding: 20px; border: 1px solid #484c50; border-radius: 7px; background: #111315; box-shadow: 0 30px 90px rgba(0,0,0,.55); }
+.hud-settings-panel > header { display: flex; justify-content: space-between; gap: 18px; padding-bottom: 15px; border-bottom: 1px solid #363a3e; }
+.hud-settings-panel > header span { color: var(--hud-accent); font-family: ui-monospace, Consolas, monospace; font-size: 9px; letter-spacing: .15em; }
+.hud-settings-panel > header h2 { margin: 5px 0 0; text-transform: uppercase; }
+.hud-settings-panel > header button { width: 36px; height: 36px; display: grid; place-items: center; color: #ccc; border: 1px solid #41454a; border-radius: 5px; background: #191b1e; }
+.hud-settings-panel label { display: grid; gap: 7px; margin-top: 16px; color: var(--hud-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.hud-settings-panel textarea { width: 100%; resize: vertical; padding: 11px; border: 1px solid #41454a; border-radius: 5px; background: #17191c; font-family: ui-monospace, Consolas, monospace; font-size: 12px; line-height: 1.5; }
+.hud-settings-panel input[type="range"] { width: 100%; accent-color: var(--hud-accent); }
+.hud-save-display { width: 100%; min-height: 46px; margin-top: 18px; color: #090909; border: 1px solid var(--hud-accent); border-radius: 5px; background: var(--hud-accent); font: inherit; font-size: 11px; font-weight: 900; text-transform: uppercase; cursor: pointer; }
+
+@media (max-width: 960px) {
+  .hud-timer-screen { overflow: auto; grid-template-rows: 30px auto auto auto 30px; }
+  .hud-timer-header { grid-template-columns: auto 1fr auto; }
+  .hud-wall-clock { display: none; }
+  .hud-timer-layout { grid-template-columns: 1fr; }
+  .hud-clock-stage { order: -1; }
+  .hud-dial { width: min(82vw, 520px); }
+  .hud-current-panel, .hud-next-panel { width: min(92vw, 720px); justify-self: center; }
+  .hud-timer-controls { flex-wrap: wrap; }
+}
+
+@media (max-width: 620px) {
+  .hud-timer-header { grid-template-columns: auto 1fr auto; gap: 8px; padding: 9px 11px; }
+  .hud-timer-brand small { display: none; }
+  .hud-timer-brand strong { font-size: 12px; }
+  .hud-spade { width: 34px; height: 34px; font-size: 21px; }
+  .hud-ghost-button { min-height: 34px; padding: 0 8px; }
+  .hud-ghost-button span { display: none; }
+  .hud-timer-tools { gap: 4px; }
+  .hud-icon-button { width: 34px; min-height: 34px; }
+  .hud-timer-layout { padding: 12px; }
+  .hud-dial { width: min(88vw, 430px); }
+  .hud-dial-core > strong { font-size: clamp(65px, 21vw, 108px); }
+  .hud-timer-panel { padding: 18px; }
+  .hud-stat-pair strong { font-size: 34px; }
+  .hud-timer-controls { display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 10px; }
+  .hud-timer-controls button { min-width: 0; padding: 0 8px; }
+  .hud-timer-controls button span { display: none; }
+  .hud-timer-controls button.primary { min-width: 0; }
+}
+/* explicit timer grid placement keeps the lower ticker pinned even without admin controls */
+.hud-marquee-top { grid-row: 1; }
+.hud-timer-header { grid-row: 2; }
+.hud-timer-layout { grid-row: 3; }
+.hud-timer-controls { grid-row: 4; }
+.hud-marquee-bottom { grid-row: 5; }
+.brand-header { position: relative; }
+.brand-header::after { top: auto; bottom: 0; }
+.home-overview-card { position: relative; }
+@media (min-width: 800px) {
+  .app-shell.app-shell-games { width: min(calc(100% - 36px), 920px); }
+  .app-shell-games .bottom-nav { width: min(calc(100% - 36px), 920px); }
+}
