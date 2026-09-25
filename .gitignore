@@ -1,9 +1,6 @@
 node_modules
-dist
-.env
-.env.local
+.next
+.env*
+!.env.example
+.data
 .vercel
-coverage
-*.log
-*.tsbuildinfo
-.DS_Store
