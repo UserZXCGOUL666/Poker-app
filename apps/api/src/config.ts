@@ -12,8 +12,6 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().default(4000),
   DATABASE_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/poker_club?schema=public'),
-  DATABASE_URL_UNPOOLED: z.string().optional(),
-  DIRECT_URL: z.string().optional(),
   JWT_SECRET: z.string().min(16).default('dev-only-secret-change-me'),
   CRON_SECRET: z.string().min(16).optional(),
   TELEGRAM_BOT_TOKEN: z.string().optional(),

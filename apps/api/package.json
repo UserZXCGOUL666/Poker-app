@@ -14,7 +14,6 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "vercel-build": "node scripts/vercel-build.mjs",
-    "db:migrate:deploy": "prisma migrate deploy",
     "telegram:setup": "tsx scripts/setup-telegram.ts"
   },
   "dependencies": {

@@ -36,7 +36,7 @@ The migration does not delete tournaments, players, registrations, points or tim
 
 ## Vercel deployment
 
-The existing Vercel build flow already runs `prisma migrate deploy` in Production. In normal use:
+The application no longer runs Prisma migrations during Vercel build or container startup. The migration file is retained only as schema history. If a database schema change is required, apply it manually in a controlled maintenance step. Previously documented normal flow:
 
 1. Replace/update the repository files with this archive.
 2. Commit to the production branch.

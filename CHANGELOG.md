@@ -1,3 +1,11 @@
+## 2026-09-25 — Automatic DB migrations disabled
+
+- Removed `prisma migrate deploy` from Docker container startup.
+- Removed automatic migration execution from the Vercel API build.
+- Removed migration-only environment variables (`DIRECT_URL`, `DATABASE_URL_UNPOOLED`, `RUN_MIGRATIONS` flow).
+- Production and preview deploys now only generate Prisma Client; they do not mutate the database schema.
+- Historical Prisma migration files remain in the repository but are inert unless a developer runs a migration command manually.
+
 # История изменений
 
 ## 1.19.0 — запись на бесплатное обучение
@@ -240,3 +248,9 @@
 ## 1.0.0
 
 - Первая версия Telegram Mini App, админки, API, бота и Render/Vercel-конфигураций.
+
+## 2026-09-25 — loading screen / daily tip visual fix
+- Replaced the legacy blue loading-tip treatment with the graphite + safety-orange HUD style.
+- Removed the oversized fixed minimum height from the loading advice card.
+- Reworked the outer application background so deployments no longer show the old navy/grid-like visual treatment.
+- Restyled the loader label and spinner to use the current club accent color.

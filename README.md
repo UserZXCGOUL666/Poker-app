@@ -192,18 +192,18 @@ npm run dev
 
 ## Деплой всего приложения на Vercel
 
-Проект подготовлен к единому deployment: Vite-интерфейс и Express API находятся под одним доменом, PostgreSQL подключается через Vercel Marketplace. Подробная пошаговая инструкция, включая перенос существующей Render PostgreSQL, находится в `VERCEL_MIGRATION.md`.
+Проект подготовлен к единому deployment: Vite-интерфейс и Express API находятся под одним доменом, PostgreSQL подключается через Vercel Marketplace. Деплой приложения не изменяет схему базы данных автоматически.
 
 Кратко:
 
 1. Импортируйте репозиторий в Vercel из корня и выберите Framework Preset **Services**.
-2. Подключите Neon/Postgres через **Storage / Marketplace**. Runtime использует pooled `DATABASE_URL`; для миграций желательно добавить `DATABASE_URL_UNPOOLED` или `DIRECT_URL`.
+2. Подключите существующую Neon/Postgres через **Storage / Marketplace** и задайте `DATABASE_URL`.
 3. Добавьте серверные секреты (`JWT_SECRET`, `CRON_SECRET`, Telegram, Cloudinary и т. д.).
-4. Выполните production deploy. Prisma-миграции применятся во время production build API.
+4. Выполните production deploy. Во время build выполняется только `prisma generate`; схема базы данных не изменяется.
 5. Проверьте `https://ВАШ-ДОМЕН/api/health`.
 6. Один раз настройте Telegram webhook через `POST /api/internal/telegram/setup` с заголовком `Authorization: Bearer <CRON_SECRET>`.
 
-В production `VITE_API_URL` больше не требуется: интерфейс обращается к `/api` на том же домене. Это убирает отдельный API-домен и большую часть CORS-конфигурации. Preview deployments по умолчанию не запускают миграции production-БД; для отдельной preview-базы можно установить `RUN_MIGRATIONS=true`.
+В production `VITE_API_URL` больше не требуется: интерфейс обращается к `/api` на том же домене. Это убирает отдельный API-домен и большую часть CORS-конфигурации. Ни production, ни preview deployment не запускают Prisma-миграции автоматически.
 
 ## Как назначить администратора
 
